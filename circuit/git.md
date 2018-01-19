@@ -100,3 +100,19 @@ git push origin ブランチ名
 ```
 git merge ブランチA ブランチB
 ```
+# 開発の進め方。
+## 基本
+GitHub上でupstreamをforkする。
+自分のoriginをcloneする。
+ローカルでdevからbranchを切る。
+バグ修正ならfix-???、機能追加ならfeature-???など
+作ったブランチをoriginにpushし、GitHub上でPull Requestを送る。
+## upstreamが変更されたら
+```
+git fetch upstream
+git merge upstream/dev dev
+git merge dev devから生やしてるブランチ
+```
+# 困ったとき
+ * ググる
+ * 誰か先輩を呼ぶ
