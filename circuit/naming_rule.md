@@ -49,9 +49,5 @@ e.g.) degExample，example_rad
 # まとめ
 変数やメソッドの命名は誰が見ても理解できるような名前が好ましい．従って，じっくりと時間をかけて考え最適な名前を付けることが大切．
 
-## LICENSE
-Boost Software License
-Copyright (c) 2018 香川高専 機械システム研究部
-Copyright (c) 2018 Watanabe Rui
 ## Date
 2018/07/01
