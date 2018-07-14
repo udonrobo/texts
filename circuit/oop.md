@@ -62,8 +62,5 @@ TODO
 # この文書について
 ## マサカリを投げる場合
 Issueを立てるかPRを送ってください。マサカリお待ちしています。
-## LICENSE
-Boost Software License
-Copyright (c) 2018 香川高専 機械システム研究部
-Copyright (c) 2018 Nakano Masaki
+
 ## 発行日
