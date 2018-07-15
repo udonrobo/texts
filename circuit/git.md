@@ -69,7 +69,6 @@ git checkout ブランチ名
 git checkout -b ブランチ名
 ```
 でブランチを作ってそのブランチに移動できる。
-```
 ## 変更がありcheckout出来ないみたいな事を言われた
 ```
 git stash
