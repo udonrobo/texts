@@ -69,7 +69,6 @@ git checkout ブランチ名
 git checkout -b ブランチ名
 ```
 でブランチを作ってそのブランチに移動できる。
-```
 ## 変更がありcheckout出来ないみたいな事を言われた
 ```
 git stash
@@ -113,6 +112,7 @@ git fetch upstream
 git merge upstream/dev dev
 git merge dev devから生やしてるブランチ
 ```
+
 # 困ったとき
  * ググる
  * 誰か先輩を呼ぶ
