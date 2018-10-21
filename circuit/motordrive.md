@@ -55,3 +55,4 @@ PWMで比率を変え、DIRで方向を指定する。ブレーキはPWMを0に�
 |名前|URL|価格|特徴|
 |:--:|:-:|:--:|:--:|
 | Cytron GROVE互換DCモータドライバ| https://www.switch-science.com/catalog/3606/ | 1283 | 安くて高機能|
+| BTS7960 | https://www.aliexpress.com/premium/HiLetgo-BTS7960.html?SearchText=HiLetgo+BTS7960&d=y&tc=ppc&initiative_id=SB_20181020201420&origin=y&catId=0&isViewCP=y | $5 | とにかく安くてヒートシンク付き|
