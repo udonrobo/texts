@@ -218,3 +218,157 @@ staticなどもスコープを狭めるのに役立つ。
 privateにしたいならunnamed namespaceを使う。
 一つのクラスから一つのインスタンスしか作らない場合や、
 本来ならそのクラス自身が持つべきデータ(コントローラの場合、送られてきたデータ、オムニホイールの場合モータのピン番号)をメソッドに渡している場合は注意。
+
+# 例
+## ステアリング制御部
+```c++
+#include <stdint.h>
+#include <math.h>
+
+template<typename T>
+class Vec {
+public:
+	T x, y;
+
+	Vec(T x, T y): x(x), y(y) {}
+	Vec(): x(0), y(0) {}
+
+	// 内積
+	T dot(Vec<T> v) {
+		return x * v.x + y * v.y;
+	}
+
+	// ノルム、ベクトルの大きさ
+	float norm() {
+		return sqrt(x*x + y*y);
+	}
+
+	// スカラ倍
+	template<typename S>
+	Vec<T> scale(S s) {
+		return Vec<T>(x * s, y * s);
+	}
+
+	Vec<T> add(Vec<T> v) {
+		return Vec<T>(x + v.x, y + v.y);
+	}
+
+	float angle() {
+		return atan2(y, x);
+	}
+};
+
+class PolarVec {
+public:
+	float r, theta;
+
+	PolarVec(float r, float theta): r(r), theta(theta) {}
+	PolarVec(): r(0), theta(0) {}
+
+	// 角を0~2πに
+	PolarVec normalize() {
+		if (theta < 0) {
+			auto times = static_cast<int>(ceil(-theta / (2 * M_PI)));
+			return PolarVec(r, theta + M_PI * 2 * times);
+		}
+		else if (theta > M_PI * 2) {
+			auto times = static_cast<int>(floor(theta / (2 * M_PI)));
+			return PolarVec(r, theta - M_PI * 2 * times);
+		}
+		else {
+			return PolarVec(r, theta);
+		}
+	}
+
+	// 角を0~πに
+	PolarVec constraintHalf() {
+		auto normalized = normalize();
+		if (normalized.theta > M_PI) {
+			return PolarVec(-normalized.r, normalized.theta - M_PI);
+		}
+		return normalized;
+	}
+};
+
+class Stear {
+public:
+	// (x, y)
+	Vec<float> mountingVectors[4];
+	// (r, θ)
+	PolarVec outputs[4];
+	PolarVec realOutputs[4];
+	float servoAngles[4];
+
+private:
+	// 理論値の計算(outputsの更新)
+	void updateOutputs(Vec<float> moveVector, int16_t rotate) {
+		Vec<float> outputVectors[4]{};
+		float outputCalcMax = 0.0;
+		// 移動ベクトルと回転ベクトルを加算して回転ベクトルに変換
+		for (uint8_t i = 0; i < 4; ++i) {
+			auto outputVector = moveVector.add(mountingVectors[i].scale(rotate));
+			auto norm = outputVector.norm();
+			outputCalcMax = fmax(outputCalcMax, norm);
+			outputs[i] = PolarVec(
+				norm,
+				outputVector.angle()
+			);
+		}
+		// 移動ベクトルの最大値と回転ベクトルの最大値のどちらか大きな方をmaxとして出力を補正
+		auto moveNorm = moveVector.norm();
+		auto rotateAbs = abs(rotate);
+		auto outputMax = fmax(moveNorm, rotateAbs);
+		for (uint8_t i = 0; i < 4; ++i) {
+			outputs[i] = PolarVec(
+				outputs[i].r * outputMax / outputCalcMax,
+				outputs[i].theta
+			);
+		}
+	}
+
+	// 実際の出力値の計算
+	void updateRealOutputs(Vec<float> moveVector, int16_t rotate) {
+		updateOutputs(moveVector, rotate);
+		// 出力をサーボの回転角に合わせる。
+		for (uint8_t i = 0; i < 4; ++i) {
+			realOutputs[i].r = outputs[i].r;
+			realOutputs[i].theta = outputs[i].theta - servoAngles[i];
+			realOutputs[i] = realOutputs[i].constraintHalf();
+		}
+	}
+
+	// 出力値の反映(未実装)
+	void reflectOutputs() {
+		// outputsのxを出力値、yを角度として計算する。
+	}
+
+public:
+	Stear(float mountingAngles[4], float _servoAngles[4]): mountingVectors{}, outputs{}, servoAngles{} {
+		for (uint8_t i = 0; i < 4; ++i) {
+			// 取り付け角から取り付けベクトルを計算。
+			// 取り付け角へと向かうベクトルと垂直になるベクトルを計算すれば良い
+			mountingVectors[i] = Vec<float>(
+				-sin(mountingAngles[i]),
+				cos(mountingAngles[i])
+			);
+		}
+		for (uint8_t i = 0; i < 4; ++i) {
+			servoAngles[i] = _servoAngles[i];
+		}
+	}
+
+	void drive(Vec<float> moveVector, float rotate) {
+		updateRealOutputs(moveVector, rotate);
+		reflectOutputs();
+	}
+
+	void driveByPolar(PolarVec moveVector, float rotate) {
+		drive(Vec<float>(
+				moveVector.r * cos(moveVector.theta),
+				moveVector.r * sin(moveVector.theta)
+			),
+			rotate
+		);
+	}
+};
+```
